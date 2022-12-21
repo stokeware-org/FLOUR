@@ -5,10 +5,43 @@ build-backend = "maturin"
 [project]
 name = "flour"
 requires-python = ">=3.7"
+dependencies = [
+  "numpy",
+]
 classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 
+[project.optional-dependencies]
+dev = [
+  "black",
+  "flake8",
+  "mypy",
+  "isort",
+  "pytest",
+  "pytest-benchmark",
+]
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*", "benchmark_*", ]
+python_functions = ["test_*", "benchmark_*"]
+
+[tool.black]
+line-length = 79
+
+[tool.isort]
+line_length = 79
+profile = "black"
+
+[tool.mypy]
+no_implicit_optional = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = []
+ignore_missing_imports = true

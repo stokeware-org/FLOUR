@@ -1,14 +1,23 @@
+use std::path::PathBuf;
+
 use pyo3::prelude::*;
 
-/// Formats the sum of two numbers as string.
+#[pyclass]
+struct CubeData {
+    #[pyo3(get)]
+    atoms: Vec<u8>,
+}
+
+/// Read a `.cube` file.
 #[pyfunction]
-fn sum_as_string(a: usize, b: usize) -> PyResult<String> {
-    Ok((a + b).to_string())
+fn read_cube(path: PathBuf) -> PyResult<CubeData> {
+    Ok(CubeData { atoms: vec![] })
 }
 
 /// A Python module implemented in Rust.
 #[pymodule]
 fn flour(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(sum_as_string, m)?)?;
+    m.add_function(wrap_pyfunction!(read_cube, m)?)?;
     Ok(())
 }
+
