@@ -75,12 +75,13 @@ fn read_cube(py: Python, path: PathBuf) -> PyResult<CubeData> {
         positions.extend(words.map(|word| word.parse::<f32>().unwrap()));
     }
 
-    let voxels: Vec<_> = contents
+    let first_voxel_line_location = lines
+        .next()
+        .ok_or(PyRuntimeError::new_err("missing voxel line"))?
+        .as_ptr() as usize;
+    let (_, voxels) = contents.split_at(first_voxel_line_location - contents.as_ptr() as usize);
+    let voxels: Vec<_> = voxels
         .split_ascii_whitespace()
-        .skip(69)
-        // TODO: is there a way to just use split_ascii_whitespace without having to go over lines
-        // and is that faster?
-        // .flat_map(str::split_ascii_whitespace)
         .map(|word| word.parse::<f32>().unwrap())
         .collect();
     Ok(CubeData {
