@@ -180,7 +180,7 @@ fn write_cube(
     for i in 0..voxels.shape()[0] {
         for j in 0..voxels.shape()[1] {
             for k in 0..voxels.shape()[2] {
-                content.push_str(&format!(" {: >12.5E}", voxels[[i, j, k]]));
+                content.push_str(&format!("{: >13.6E}", voxels[[i, j, k]]));
                 column_number += 1;
                 if column_number == 6 {
                     column_number = 0;
