@@ -132,11 +132,11 @@ fn write_cube(
     title1: &str,
     title2: &str,
     atoms: PyReadonlyArray1<u8>,
-    charges: PyReadonlyArray1<f32>,
-    positions: PyReadonlyArray2<f32>,
-    voxel_origin: PyReadonlyArray1<f32>,
-    voxel_size: PyReadonlyArray2<f32>,
-    voxels: PyReadonlyArray3<f32>,
+    charges: PyReadonlyArray1<f64>,
+    positions: PyReadonlyArray2<f64>,
+    voxel_origin: PyReadonlyArray1<f64>,
+    voxel_size: PyReadonlyArray2<f64>,
+    voxels: PyReadonlyArray3<f64>,
 ) -> PyResult<()> {
     let atoms = atoms.as_array();
     let charges = charges.as_array();
