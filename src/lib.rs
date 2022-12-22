@@ -71,15 +71,12 @@ fn read_cube(py: Python, path: PathBuf) -> PyResult<CubeData> {
         positions.extend(words.map(|word| word.parse::<f32>().unwrap()));
     }
 
-    // TODO: is using with capacity here better than using collect?
-    let mut voxels = Vec::with_capacity(num_voxels_x * num_voxels_y * num_voxels_z);
-    voxels.extend(
+    let voxels: Vec<_> = lines
         // TODO: is there a way to just use split_ascii_whitespace without having to go over lines
         // and is that faster?
-        lines
-            .flat_map(str::split_ascii_whitespace)
-            .map(|word| word.parse::<f32>().unwrap()),
-    );
+        .flat_map(str::split_ascii_whitespace)
+        .map(|word| word.parse::<f32>().unwrap())
+        .collect();
     Ok(CubeData {
         atoms: atoms.into_pyarray(py).to_owned(),
         charges: charges.into_pyarray(py).to_owned(),
