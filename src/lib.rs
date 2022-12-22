@@ -9,11 +9,11 @@ use pyo3::{exceptions::PyRuntimeError, prelude::*};
 #[pyclass]
 struct VoxelGrid {
     #[pyo3(get)]
-    voxels: Py<PyArray3<f32>>,
+    voxels: Py<PyArray3<f64>>,
     #[pyo3(get)]
-    origin: Py<PyArray1<f32>>,
+    origin: Py<PyArray1<f64>>,
     #[pyo3(get)]
-    voxel_size: Py<PyArray2<f32>>,
+    voxel_size: Py<PyArray2<f64>>,
 }
 
 #[pyclass]
@@ -21,9 +21,9 @@ struct CubeData {
     #[pyo3(get)]
     atoms: Py<PyArray1<u8>>,
     #[pyo3(get)]
-    charges: Py<PyArray1<f32>>,
+    charges: Py<PyArray1<f64>>,
     #[pyo3(get)]
-    positions: Py<PyArray2<f32>>,
+    positions: Py<PyArray2<f64>>,
     #[pyo3(get)]
     grid: Py<VoxelGrid>,
 }
@@ -43,8 +43,8 @@ fn read_cube(py: Python, path: PathBuf) -> PyResult<CubeData> {
             "cube file does not define the number of atoms",
         ))?
         .parse::<usize>()?;
-    let origin: Vec<f32> = third_line_words
-        .map(|word| word.parse::<f32>().unwrap())
+    let origin: Vec<f64> = third_line_words
+        .map(|word| word.parse::<f64>().unwrap())
         .collect();
 
     let mut voxel_size = Vec::with_capacity(9);
@@ -53,7 +53,7 @@ fn read_cube(py: Python, path: PathBuf) -> PyResult<CubeData> {
     let num_voxels_z = parse_voxel_line(&mut lines, &mut voxel_size)?;
 
     let mut atoms: Vec<u8> = Vec::with_capacity(num_atoms);
-    let mut charges: Vec<f32> = Vec::with_capacity(num_atoms);
+    let mut charges: Vec<f64> = Vec::with_capacity(num_atoms);
     let mut positions = Vec::with_capacity(num_atoms * 3);
     for _ in 0..num_atoms {
         let atom_line = lines.next().ok_or(PyRuntimeError::new_err(
@@ -72,9 +72,9 @@ fn read_cube(py: Python, path: PathBuf) -> PyResult<CubeData> {
             words
                 .next()
                 .ok_or(PyRuntimeError::new_err("cube file is missing charge"))?
-                .parse::<f32>()?,
+                .parse::<f64>()?,
         );
-        positions.extend(words.map(|word| word.parse::<f32>().unwrap()));
+        positions.extend(words.map(|word| word.parse::<f64>().unwrap()));
     }
 
     let first_voxel_line_location = lines
@@ -84,7 +84,7 @@ fn read_cube(py: Python, path: PathBuf) -> PyResult<CubeData> {
     let (_, voxels) = contents.split_at(first_voxel_line_location - contents.as_ptr() as usize);
     let voxels: Vec<_> = voxels
         .split_ascii_whitespace()
-        .map(|word| word.parse::<f32>().unwrap())
+        .map(|word| word.parse::<f64>().unwrap())
         .collect();
     Ok(CubeData {
         atoms: atoms.into_pyarray(py).to_owned(),
@@ -110,7 +110,7 @@ fn read_cube(py: Python, path: PathBuf) -> PyResult<CubeData> {
 #[inline]
 fn parse_voxel_line<'a>(
     lines: &mut impl Iterator<Item = &'a str>,
-    voxel_size: &mut Vec<f32>,
+    voxel_size: &mut Vec<f64>,
 ) -> PyResult<usize> {
     let line = lines.next().ok_or(PyRuntimeError::new_err(
         "cube file is missing voxel definition line",
@@ -122,7 +122,7 @@ fn parse_voxel_line<'a>(
             "cube file is missing number of voxels",
         ))?
         .parse::<usize>()?;
-    voxel_size.extend(words.map(|word| word.parse::<f32>().unwrap()));
+    voxel_size.extend(words.map(|word| word.parse::<f64>().unwrap()));
     Ok(num_voxels)
 }
 
