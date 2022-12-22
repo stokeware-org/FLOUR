@@ -1,7 +1,9 @@
 use std::{fs, path::PathBuf};
 
+use itertools::izip;
 use numpy::convert::IntoPyArray;
-use numpy::{PyArray1, PyArray2, PyArray3};
+use numpy::ndarray::Axis;
+use numpy::{PyArray1, PyArray2, PyArray3, PyReadonlyArray1, PyReadonlyArray2, PyReadonlyArray3};
 use pyo3::{exceptions::PyRuntimeError, prelude::*};
 
 #[pyclass]
@@ -124,9 +126,79 @@ fn parse_voxel_line<'a>(
     Ok(num_voxels)
 }
 
+#[pyfunction]
+fn write_cube(
+    path: PathBuf,
+    title1: &str,
+    title2: &str,
+    atoms: PyReadonlyArray1<u8>,
+    charges: PyReadonlyArray1<f64>,
+    positions: PyReadonlyArray2<f64>,
+    voxel_origin: PyReadonlyArray1<f64>,
+    voxel_size: PyReadonlyArray2<f64>,
+    voxels: PyReadonlyArray3<f64>,
+) -> PyResult<()> {
+    let atoms = atoms.as_array();
+    let charges = charges.as_array();
+    let positions = positions.as_array();
+    let voxel_origin = voxel_origin.as_array();
+    let voxel_size = voxel_size.as_array();
+    let voxels = voxels.as_array();
+
+    let mut content = format!(
+        "{}\n{}\n\
+        {: >5} {: >11.6} {: >11.6} {: >11.6}\n\
+        {: >5} {: >11.6} {: >11.6} {: >11.6}\n\
+        {: >5} {: >11.6} {: >11.6} {: >11.6}\n\
+        {: >5} {: >11.6} {: >11.6} {: >11.6}\n",
+        title1,
+        title2,
+        atoms.len(),
+        voxel_origin[0],
+        voxel_origin[1],
+        voxel_origin[2],
+        voxels.shape()[0],
+        voxel_size[[0, 0]],
+        voxel_size[[0, 1]],
+        voxel_size[[0, 2]],
+        voxels.shape()[1],
+        voxel_size[[1, 0]],
+        voxel_size[[1, 1]],
+        voxel_size[[1, 2]],
+        voxels.shape()[2],
+        voxel_size[[2, 0]],
+        voxel_size[[2, 1]],
+        voxel_size[[2, 2]],
+    );
+    izip!(atoms, charges, positions.axis_iter(Axis(0))).for_each(|(atom, charge, position)| {
+        content.push_str(&format!(
+            "{: >5} {: >11.6} {: >11.6} {: >11.6} {: >11.6}\n",
+            atom, charge, position[0], position[1], position[2],
+        ))
+    });
+    let mut column_number = 0;
+    for i in 0..voxels.shape()[0] {
+        for j in 0..voxels.shape()[1] {
+            for k in 0..voxels.shape()[2] {
+                content.push_str(&format!("{: >13.6E}", voxels[[i, j, k]]));
+                column_number += 1;
+                if column_number == 6 {
+                    column_number = 0;
+                    content.push('\n');
+                }
+            }
+            content.push('\n');
+            column_number = 0;
+        }
+    }
+    fs::write(path, content)?;
+    Ok(())
+}
+
 /// A Python module implemented in Rust.
 #[pymodule]
 fn flour(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(read_cube, m)?)?;
+    m.add_function(wrap_pyfunction!(write_cube, m)?)?;
     Ok(())
 }
