@@ -33,11 +33,13 @@ fn read_cube(py: Python, path: PathBuf) -> PyResult<CubeData> {
     let mut lines = contents.lines().skip(2); // drop the title lines
     let third_line = lines
         .next()
-        .ok_or(PyRuntimeError::new_err("could not read cube file"))?;
+        .ok_or(PyRuntimeError::new_err("cube file is missing lines"))?;
     let mut third_line_words = third_line.split_ascii_whitespace();
     let num_atoms = third_line_words
         .next()
-        .ok_or(PyRuntimeError::new_err("could not read cube file"))?
+        .ok_or(PyRuntimeError::new_err(
+            "cube file does not define the number of atoms",
+        ))?
         .parse::<usize>()?;
     let origin: Vec<f32> = third_line_words
         .map(|word| word.parse::<f32>().unwrap())
@@ -52,29 +54,33 @@ fn read_cube(py: Python, path: PathBuf) -> PyResult<CubeData> {
     let mut charges: Vec<f32> = Vec::with_capacity(num_atoms);
     let mut positions = Vec::with_capacity(num_atoms * 3);
     for _ in 0..num_atoms {
-        let atom_line = lines
-            .next()
-            .ok_or(PyRuntimeError::new_err("could not read cube file"))?;
+        let atom_line = lines.next().ok_or(PyRuntimeError::new_err(
+            "cube file is missing atom definition line",
+        ))?;
         let mut words = atom_line.split_ascii_whitespace();
         atoms.push(
             words
                 .next()
-                .ok_or(PyRuntimeError::new_err("could not read cube file"))?
+                .ok_or(PyRuntimeError::new_err(
+                    "cube file is missing atomic number",
+                ))?
                 .parse::<u8>()?,
         );
         charges.push(
             words
                 .next()
-                .ok_or(PyRuntimeError::new_err("could not read cube file"))?
+                .ok_or(PyRuntimeError::new_err("cube file is missing charge"))?
                 .parse::<f32>()?,
         );
         positions.extend(words.map(|word| word.parse::<f32>().unwrap()));
     }
 
-    let voxels: Vec<_> = lines
+    let voxels: Vec<_> = contents
+        .split_ascii_whitespace()
+        .skip(69)
         // TODO: is there a way to just use split_ascii_whitespace without having to go over lines
         // and is that faster?
-        .flat_map(str::split_ascii_whitespace)
+        // .flat_map(str::split_ascii_whitespace)
         .map(|word| word.parse::<f32>().unwrap())
         .collect();
     Ok(CubeData {
@@ -103,13 +109,15 @@ fn parse_voxel_line<'a>(
     lines: &mut impl Iterator<Item = &'a str>,
     voxel_size: &mut Vec<f32>,
 ) -> PyResult<usize> {
-    let line = lines
-        .next()
-        .ok_or(PyRuntimeError::new_err("could not read cube file"))?;
+    let line = lines.next().ok_or(PyRuntimeError::new_err(
+        "cube file is missing voxel definition line",
+    ))?;
     let mut words = line.split_ascii_whitespace();
     let num_voxels = words
         .next()
-        .ok_or(PyRuntimeError::new_err("could not read cube file"))?
+        .ok_or(PyRuntimeError::new_err(
+            "cube file is missing number of voxels",
+        ))?
         .parse::<usize>()?;
     voxel_size.extend(words.map(|word| word.parse::<f32>().unwrap()));
     Ok(num_voxels)
