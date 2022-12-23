@@ -51,6 +51,6 @@ Installation
   cube_data.atoms  # The atomic number of each atom.
   cube_data.charges  # The charge of each atom.
   cube_data.positions  # The position matrix of the molecule.
-  cube_data.grid.origin  # The origin of the voxle grid.
+  cube_data.grid.origin  # The origin of the voxel grid.
   cube_data.grid.voxel_size  # The a, b, c vectors of a single voxel.
   cube_data.grid.voxels  # The voxel grid.
