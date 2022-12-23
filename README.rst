@@ -41,6 +41,7 @@ Installation
   # A 20 x 20 x 20 grid of random voxels.
   voxels = np.random.rand(20, 20, 20)
 
+  # Write the cube file.
   flour.write_cube(
       path=path,
       title1="The first line of the cube file",
@@ -53,7 +54,10 @@ Installation
       voxels=voxels,
   )
 
+  # Read the cube file.
   cube_data = flour.read_cube(cube_path)
+
+  # Check that the data is consistent.
   assert np.all(np.isclose(atoms, cube_data.atoms))
   assert np.all(np.isclose(charges, cube_data.charges))
   assert np.all(np.isclose(positions, cube_data.positions))
