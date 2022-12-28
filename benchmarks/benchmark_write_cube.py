@@ -3,8 +3,10 @@ import typing
 
 import flour
 import numpy as np
+import pytest
 
 
+@pytest.mark.benchmark(group="write_cube")
 def benchmark_write_cube(
     benchmark: typing.Any,
     tmp_path: pathlib.Path,
