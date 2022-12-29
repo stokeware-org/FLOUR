@@ -1,4 +1,5 @@
 /target
+docker_testing_environment/requirements.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
