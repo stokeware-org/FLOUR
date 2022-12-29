@@ -43,3 +43,7 @@ check:
 build-testing-environment:
   pip-compile -o docker_testing_environment/requirements.txt --extra dev pyproject.toml
   docker image build -t flour-testing-environment:latest docker_testing_environment
+
+# enter the docker testing environment
+docker:
+  docker run -it --rm --mount type=bind,source="$(pwd)",target=/code flour-testing-environment /bin/sh
