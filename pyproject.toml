@@ -22,6 +22,8 @@ dev = [
   "isort",
   "pytest",
   "pytest-benchmark",
+  "pip-tools",
+  "maturin",
 ]
 
 [tool.pytest.ini_options]
