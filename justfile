@@ -2,6 +2,7 @@
 default:
   @just --list
 
+# install dev dependencies
 dev-env:
   pip install maturin
   maturin develop --extras=dev
