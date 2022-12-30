@@ -3,7 +3,10 @@ flour
 
 ``flour`` is a Python library for really fast chemical file reading and writing.
 
+--
+
 .. contents:: Table of contents
+  :section-numbering;
 
 Installation
 ------------
