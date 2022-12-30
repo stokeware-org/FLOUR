@@ -35,13 +35,11 @@ fn read_cube(py: Python, path: PathBuf) -> PyResult<CubeData> {
     let mut lines = contents.lines().skip(2); // drop the title lines
     let third_line = lines
         .next()
-        .ok_or(PyRuntimeError::new_err("cube file is missing lines"))?;
+        .ok_or_else(|| PyRuntimeError::new_err("cube file is missing lines"))?;
     let mut third_line_words = third_line.split_ascii_whitespace();
     let num_atoms = third_line_words
         .next()
-        .ok_or(PyRuntimeError::new_err(
-            "cube file does not define the number of atoms",
-        ))?
+        .ok_or_else(|| PyRuntimeError::new_err("cube file does not define the number of atoms"))?
         .parse::<usize>()?;
     let origin: Vec<f64> = third_line_words
         .map(|word| word.parse::<f64>().unwrap())
@@ -56,22 +54,20 @@ fn read_cube(py: Python, path: PathBuf) -> PyResult<CubeData> {
     let mut charges: Vec<f64> = Vec::with_capacity(num_atoms);
     let mut positions = Vec::with_capacity(num_atoms * 3);
     for _ in 0..num_atoms {
-        let atom_line = lines.next().ok_or(PyRuntimeError::new_err(
-            "cube file is missing atom definition line",
-        ))?;
+        let atom_line = lines
+            .next()
+            .ok_or_else(|| PyRuntimeError::new_err("cube file is missing atom definition line"))?;
         let mut words = atom_line.split_ascii_whitespace();
         atoms.push(
             words
                 .next()
-                .ok_or(PyRuntimeError::new_err(
-                    "cube file is missing atomic number",
-                ))?
+                .ok_or_else(|| PyRuntimeError::new_err("cube file is missing atomic number"))?
                 .parse::<u8>()?,
         );
         charges.push(
             words
                 .next()
-                .ok_or(PyRuntimeError::new_err("cube file is missing charge"))?
+                .ok_or_else(|| PyRuntimeError::new_err("cube file is missing charge"))?
                 .parse::<f64>()?,
         );
         positions.extend(words.map(|word| word.parse::<f64>().unwrap()));
@@ -79,7 +75,7 @@ fn read_cube(py: Python, path: PathBuf) -> PyResult<CubeData> {
 
     let first_voxel_line_location = lines
         .next()
-        .ok_or(PyRuntimeError::new_err("missing voxel line"))?
+        .ok_or_else(|| PyRuntimeError::new_err("missing voxel line"))?
         .as_ptr() as usize;
     let (_, voxels) = contents.split_at(first_voxel_line_location - contents.as_ptr() as usize);
     let voxels: Vec<_> = voxels
@@ -112,20 +108,21 @@ fn parse_voxel_line<'a>(
     lines: &mut impl Iterator<Item = &'a str>,
     voxel_size: &mut Vec<f64>,
 ) -> PyResult<usize> {
-    let line = lines.next().ok_or(PyRuntimeError::new_err(
-        "cube file is missing voxel definition line",
-    ))?;
+    let line = lines
+        .next()
+        .ok_or_else(|| PyRuntimeError::new_err("cube file is missing voxel definition line"))?;
     let mut words = line.split_ascii_whitespace();
     let num_voxels = words
         .next()
-        .ok_or(PyRuntimeError::new_err(
-            "cube file is missing number of voxels",
-        ))?
+        .ok_or_else(|| PyRuntimeError::new_err("cube file is missing number of voxels"))?
         .parse::<usize>()?;
     voxel_size.extend(words.map(|word| word.parse::<f64>().unwrap()));
     Ok(num_voxels)
 }
 
+// Too many arguments is not a problem here because it is exposed
+// as a Python function which can use keyword-arguments.
+#[allow(clippy::too_many_arguments)]
 #[pyfunction]
 fn write_cube(
     path: PathBuf,
