@@ -16,7 +16,6 @@ jobs:
         uses: actions/checkout@v3
       - name: Install flour
         run: |
-          env
           . /deps/venv/bin/activate
           maturin develop
       - name: Lint with flake8
