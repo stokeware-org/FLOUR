@@ -3,11 +3,9 @@ flour
 
 ``flour`` is a Python library for really fast chemical file reading and writing.
 
+----
 
-Contents
---------
-
-.. contents::
+.. contents:: Table of contents
 
 Installation
 ------------
@@ -60,3 +58,20 @@ Installation
   cube_data.grid.origin  # The origin of the voxel grid.
   cube_data.grid.voxel_size  # The a, b, c vectors of a single voxel.
   cube_data.grid.voxels  # The voxel grid.
+
+
+Developer guide
+---------------
+
+If you want to develop ``FLOUR`` there's a couple of handy things you should know.
+``FLOUR`` is built using the excellent maturin_ library. This means that to build
+the library you run
+
+.. code-block:: bash
+
+  maturin develop --extras=dev --profile=release
+
+and that's more or less all there is to it. The only other thing to note is that we do have
+a justfile_ -- which contains commands you might find helpful for formatting and linting your code.
+
+.. _maturin: https://github.com/PyO3/maturin
