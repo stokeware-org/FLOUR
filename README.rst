@@ -73,6 +73,8 @@ the library you run
 
 and that's more or less all there is to it. The only other thing to note is that we do have
 a justfile_ -- which contains commands you might find helpful for formatting and linting your code.
+To use the justfile_ you should grab just__.
 
 .. _maturin: https://github.com/PyO3/maturin
 .. _justfile: justfile
+.. _just: https://github.com/casey/just
