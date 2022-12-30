@@ -47,3 +47,11 @@ build-testing-environment:
 # enter the docker testing environment
 docker:
   docker run -it --rm --mount type=bind,source="$(pwd)",target=/code flour-testing-environment /bin/sh
+
+# run benchmarks
+benchmarks:
+  pytest benchmarks
+
+# build the library
+build:
+  maturin develop --profile=release --extras=dev
