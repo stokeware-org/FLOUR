@@ -75,3 +75,4 @@ and that's more or less all there is to it. The only other thing to note is that
 a justfile_ -- which contains commands you might find helpful for formatting and linting your code.
 
 .. _maturin: https://github.com/PyO3/maturin
+.. _justfile: justfile
