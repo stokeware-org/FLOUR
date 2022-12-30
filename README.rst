@@ -6,7 +6,6 @@ flour
 --
 
 .. contents:: Table of contents
-  :section-numbering;
 
 Installation
 ------------
