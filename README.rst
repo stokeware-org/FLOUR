@@ -72,7 +72,8 @@ the library you run
   maturin develop --extras=dev --profile=release
 
 and that's more or less all there is to it. The only other thing to note is that we do have
-a justfile_, which contains commands you might find helpful for formatting and linting your code.
+a justfile_, which can be used to run various actions on the repository, such as automated
+checks and building the Docker testing environment.
 To use the justfile_ you should grab just_.
 
 .. _maturin: https://github.com/PyO3/maturin
