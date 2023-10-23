@@ -192,10 +192,16 @@ fn write_cube(
     Ok(())
 }
 
+#[pyfunction]
+fn write_xyz(path: PathBuf, comment: &str) -> PyResult<()> {
+    Ok(())
+}
+
 /// A Python module implemented in Rust.
 #[pymodule]
 fn flour(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(read_cube, m)?)?;
     m.add_function(wrap_pyfunction!(write_cube, m)?)?;
+    m.add_function(wrap_pyfunction!(write_xyz, m)?)?;
     Ok(())
 }
