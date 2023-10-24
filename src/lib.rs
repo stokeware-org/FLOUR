@@ -193,7 +193,7 @@ fn write_cube(
 }
 
 #[pyfunction]
-fn write_xyz(path: PathBuf, comment: &str) -> PyResult<()> {
+fn write_xyz(path: PathBuf, comment: &str, elements: Vec<String>) -> PyResult<()> {
     Ok(())
 }
 

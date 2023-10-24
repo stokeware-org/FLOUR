@@ -10,7 +10,7 @@ def test_xyz(
 
     xyz_path = tmp_path / "molecule.xyz"
     comment = "comment"
-    elements = np.array(['Pd', 'C', 'O', 'H'])
+    elements = ['Pd', 'C', 'O', 'H']
     positions = np.array(
         [
             [1.0, 2.0, 3.0],
@@ -22,7 +22,7 @@ def test_xyz(
     flour.write_xyz(
         path=xyz_path,
         comment=comment,
-        # atoms=elements,
+        elements=elements,
         # positions=positions,
     )
     assert True
