@@ -193,7 +193,19 @@ fn write_cube(
 }
 
 #[pyfunction]
-fn write_xyz(path: PathBuf, comment: &str, elements: Vec<String>) -> PyResult<()> {
+fn write_xyz(
+    path: PathBuf,
+    comment: &str,
+    elements: Vec<String>,
+    positions: PyReadonlyArray2<f64>,
+) -> PyResult<()> {
+    let positions = positions.as_array();
+
+    let mut content: String = elements.len().to_string();
+    content.push('\n');
+    content.push_str(comment);
+    content.push('\n');
+    fs::write(path, content)?;
     Ok(())
 }
 

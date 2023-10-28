@@ -23,9 +23,13 @@ def test_xyz(
         path=xyz_path,
         comment=comment,
         elements=elements,
-        # positions=positions,
+        positions=positions,
     )
     assert True
+    assert xyz_path.exists()
+    with open(xyz_path) as xyz_file:
+        assert xyz_file.readline() == '4\n'
+        assert xyz_file.readline() == f'{comment}\n'
     return
     xyz_data = flour.read_xyz(xyz_path)
     assert comment == xyz_data.comment
