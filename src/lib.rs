@@ -205,6 +205,14 @@ fn write_xyz(
     content.push('\n');
     content.push_str(comment);
     content.push('\n');
+
+    izip!(elements, positions.axis_iter(Axis(0))).for_each(|(element, position)| {
+        content.push_str(&format!(
+            "{} {: >11.6} {: >11.6} {: >11.6} \n",
+            element, position[0], position[1], position[2],
+        ))
+    });
+
     fs::write(path, content)?;
     Ok(())
 }

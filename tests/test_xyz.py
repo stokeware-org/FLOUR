@@ -30,6 +30,7 @@ def test_xyz(
     with open(xyz_path) as xyz_file:
         assert xyz_file.readline() == '4\n'
         assert xyz_file.readline() == f'{comment}\n'
+        assert xyz_file.readline() == 'Pd    1.000000    2.000000    3.000000 \n'
     return
     xyz_data = flour.read_xyz(xyz_path)
     assert comment == xyz_data.comment
