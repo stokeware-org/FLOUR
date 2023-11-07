@@ -192,6 +192,23 @@ fn write_cube(
     Ok(())
 }
 
+#[pyclass]
+struct XyzData {
+    #[pyo3(get)]
+    elements: Py<Vec<String>>,
+    #[pyo3(get)]
+    positions: Py<PyArray2<f64>>,
+}
+
+/// Read a `.xyz` file.
+#[pyfunction]
+fn read_xyz(py: Python, path: PathBuf) -> PyResult<XyzData> {
+    Ok(XyzData {
+        elements: Py<Vec<String>> = Vec::with_capacity(5),
+        positions: PyArray2::new(py, [4, 3], false),
+    })
+}
+
 #[pyfunction]
 fn write_xyz(
     path: PathBuf,
@@ -223,5 +240,6 @@ fn flour(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(read_cube, m)?)?;
     m.add_function(wrap_pyfunction!(write_cube, m)?)?;
     m.add_function(wrap_pyfunction!(write_xyz, m)?)?;
+    m.add_function(wrap_pyfunction!(read_xyz, m)?)?;
     Ok(())
 }
