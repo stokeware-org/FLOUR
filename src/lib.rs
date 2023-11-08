@@ -195,7 +195,7 @@ fn write_cube(
 #[pyclass]
 struct XyzData {
     #[pyo3(get)]
-    elements: Py<Vec<String>>,
+    elements: String,
     #[pyo3(get)]
     positions: Py<PyArray2<f64>>,
 }
@@ -203,9 +203,10 @@ struct XyzData {
 /// Read a `.xyz` file.
 #[pyfunction]
 fn read_xyz(py: Python, path: PathBuf) -> PyResult<XyzData> {
+    let mut positions: Vec<f64> = vec![1.0; 9];
     Ok(XyzData {
-        elements: Py<Vec<String>> = Vec::with_capacity(5),
-        positions: PyArray2::new(py, [4, 3], false),
+        elements: String::from("Hello"),
+        positions: positions.into_pyarray(py).reshape([3, 3])?.to_owned(),
     })
 }
 
