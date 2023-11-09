@@ -32,7 +32,7 @@ def test_xyz(
         assert xyz_file.readline() == f'{comment}\n'
         assert xyz_file.readline() == 'Pd    1.000000    2.000000    3.000000 \n'
     xyz_data = flour.read_xyz(xyz_path)
-    assert xyz_data.elements == 'Hello'
+    assert xyz_data.elements == '4'
     assert np.all(np.isclose(xyz_data.positions, np.array([1.0] * 9).reshape((3,3))))
     return
     assert comment == xyz_data.comment

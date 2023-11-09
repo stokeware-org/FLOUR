@@ -200,12 +200,23 @@ struct XyzData {
     positions: Py<PyArray2<f64>>,
 }
 
-/// Read a `.xyz` file.
+/// Read an `.xyz` file.
 #[pyfunction]
 fn read_xyz(py: Python, path: PathBuf) -> PyResult<XyzData> {
+    let contents = fs::read_to_string(path)?;
+    let mut lines = contents.lines();
+    let first_line = lines
+        .next()
+        .ok_or_else(|| PyRuntimeError::new_err("xyz file is missing lines"))?;
+    let mut first_line_words = first_line.split_ascii_whitespace();
+    let num_atoms = first_line_words
+        .next()
+        .ok_or_else(|| PyRuntimeError::new_err("xyz file does not define the number of atoms"))?
+        .parse::<usize>()?;
+
     let mut positions: Vec<f64> = vec![1.0; 9];
     Ok(XyzData {
-        elements: String::from("Hello"),
+        elements: num_atoms.to_string(),
         positions: positions.into_pyarray(py).reshape([3, 3])?.to_owned(),
     })
 }
