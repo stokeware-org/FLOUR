@@ -197,6 +197,8 @@ struct XyzData {
     #[pyo3(get)]
     elements: String,
     #[pyo3(get)]
+    comment: String,
+    #[pyo3(get)]
     positions: Py<PyArray2<f64>>,
 }
 
@@ -214,9 +216,14 @@ fn read_xyz(py: Python, path: PathBuf) -> PyResult<XyzData> {
         .ok_or_else(|| PyRuntimeError::new_err("xyz file does not define the number of atoms"))?
         .parse::<usize>()?;
 
+    let second_line = lines
+        .next()
+        .ok_or_else(|| PyRuntimeError::new_err("xyz file is missing lines"))?;
+
     let mut positions: Vec<f64> = vec![1.0; 9];
     Ok(XyzData {
         elements: num_atoms.to_string(),
+        comment: second_line.to_string(),
         positions: positions.into_pyarray(py).reshape([3, 3])?.to_owned(),
     })
 }
