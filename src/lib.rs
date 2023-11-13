@@ -220,11 +220,25 @@ fn read_xyz(py: Python, path: PathBuf) -> PyResult<XyzData> {
         .next()
         .ok_or_else(|| PyRuntimeError::new_err("xyz file is missing lines"))?;
 
-    let mut positions: Vec<f64> = vec![1.0; 9];
+    let mut positions = Vec::with_capacity(num_atoms * 3);
+    for _ in 0..num_atoms {
+        let atom_line = lines
+            .next()
+            .ok_or_else(|| PyRuntimeError::new_err("xyz file is missing atom definition line"))?;
+        let mut words = atom_line.split_ascii_whitespace();
+        let element = words
+            .next()
+            .ok_or_else(|| PyRuntimeError::new_err("xyz file is missing element symbol"))?;
+        positions.extend(words.map(|word: &str| word.parse::<f64>().unwrap()));
+    }
+
     Ok(XyzData {
         elements: num_atoms.to_string(),
         comment: second_line.to_string(),
-        positions: positions.into_pyarray(py).reshape([3, 3])?.to_owned(),
+        positions: positions
+            .into_pyarray(py)
+            .reshape([num_atoms, 3])?
+            .to_owned(),
     })
 }
 
