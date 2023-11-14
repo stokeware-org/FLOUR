@@ -195,14 +195,14 @@ fn write_cube(
 #[pyclass]
 struct XyzData {
     #[pyo3(get)]
-    elements: String,
+    elements: Vec<String>,
     #[pyo3(get)]
     comment: String,
     #[pyo3(get)]
     positions: Py<PyArray2<f64>>,
 }
 
-/// Read an `.xyz` file.
+/// Read a `.xyz` file.
 #[pyfunction]
 fn read_xyz(py: Python, path: PathBuf) -> PyResult<XyzData> {
     let contents = fs::read_to_string(path)?;
@@ -220,6 +220,7 @@ fn read_xyz(py: Python, path: PathBuf) -> PyResult<XyzData> {
         .next()
         .ok_or_else(|| PyRuntimeError::new_err("xyz file is missing lines"))?;
 
+    let mut elements = Vec::with_capacity(num_atoms);
     let mut positions = Vec::with_capacity(num_atoms * 3);
     for _ in 0..num_atoms {
         let atom_line = lines
@@ -229,11 +230,12 @@ fn read_xyz(py: Python, path: PathBuf) -> PyResult<XyzData> {
         let element = words
             .next()
             .ok_or_else(|| PyRuntimeError::new_err("xyz file is missing element symbol"))?;
+        elements.push(element.to_string());
         positions.extend(words.map(|word: &str| word.parse::<f64>().unwrap()));
     }
 
     Ok(XyzData {
-        elements: num_atoms.to_string(),
+        elements,
         comment: second_line.to_string(),
         positions: positions
             .into_pyarray(py)
