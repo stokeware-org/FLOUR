@@ -204,44 +204,44 @@ struct XyzData {
 
 /// Read a `.xyz` file.
 #[pyfunction]
-fn read_xyz(py: Python, path: PathBuf) -> PyResult<XyzData> {
+fn read_xyz(py: Python, path: PathBuf) -> PyResult<Vec<XyzData>> {
+    let mut multi_xyz_data: Vec<XyzData> = vec![];
     let contents = fs::read_to_string(path)?;
     let mut lines = contents.lines();
-    let first_line = lines
-        .next()
-        .ok_or_else(|| PyRuntimeError::new_err("xyz file is missing lines"))?;
-    let mut first_line_words = first_line.split_ascii_whitespace();
-    let num_atoms = first_line_words
-        .next()
-        .ok_or_else(|| PyRuntimeError::new_err("xyz file does not define the number of atoms"))?
-        .parse::<usize>()?;
+    loop {
+        let Some(first_line) = lines.next() else {break};
+        let mut first_line_words = first_line.split_ascii_whitespace();
+        let Some(num_atoms) = first_line_words.next() else {break};
+        let num_atoms = num_atoms.parse::<usize>()?;
 
-    let second_line = lines
-        .next()
-        .ok_or_else(|| PyRuntimeError::new_err("xyz file is missing lines"))?;
+        let second_line = lines
+            .next()
+            .ok_or_else(|| PyRuntimeError::new_err("xyz file is missing lines"))?;
 
-    let mut elements = Vec::with_capacity(num_atoms);
-    let mut positions = Vec::with_capacity(num_atoms * 3);
-    for _ in 0..num_atoms {
-        let atom_line = lines
-            .next()
-            .ok_or_else(|| PyRuntimeError::new_err("xyz file is missing atom definition line"))?;
-        let mut words = atom_line.split_ascii_whitespace();
-        let element = words
-            .next()
-            .ok_or_else(|| PyRuntimeError::new_err("xyz file is missing element symbol"))?;
-        elements.push(element.to_string());
-        positions.extend(words.map(|word: &str| word.parse::<f64>().unwrap()));
+        let mut elements = Vec::with_capacity(num_atoms);
+        let mut positions = Vec::with_capacity(num_atoms * 3);
+        for _ in 0..num_atoms {
+            let atom_line = lines.next().ok_or_else(|| {
+                PyRuntimeError::new_err("xyz file is missing atom definition line")
+            })?;
+            let mut words = atom_line.split_ascii_whitespace();
+            let element = words
+                .next()
+                .ok_or_else(|| PyRuntimeError::new_err("xyz file is missing element symbol"))?;
+            elements.push(element.to_string());
+            positions.extend(words.map(|word: &str| word.parse::<f64>().unwrap()));
+        }
+
+        multi_xyz_data.push(XyzData {
+            elements,
+            comment: second_line.to_string(),
+            positions: positions
+                .into_pyarray(py)
+                .reshape([num_atoms, 3])?
+                .to_owned(),
+        });
     }
-
-    Ok(XyzData {
-        elements,
-        comment: second_line.to_string(),
-        positions: positions
-            .into_pyarray(py)
-            .reshape([num_atoms, 3])?
-            .to_owned(),
-    })
+    Ok(multi_xyz_data)
 }
 
 #[pyfunction]
