@@ -40,3 +40,9 @@ def test_xyz(
         assert len(current_xyz_data.elements) == 61
     assert multi_xyz_data[27].elements[60] == 'H'
     assert np.isclose(multi_xyz_data[27].positions[60,2], -3.171669)
+    
+    xyz_constructor_data = flour.XyzData(
+        comment=comment,
+        elements=elements,
+        positions=positions
+    )

@@ -202,6 +202,18 @@ struct XyzData {
     positions: Py<PyArray2<f64>>,
 }
 
+#[pymethods]
+impl XyzData {
+    #[new]
+    fn new(comment: String, elements: Vec<String>, positions: Py<PyArray2<f64>>) -> Self {
+        XyzData {
+            elements,
+            comment,
+            positions,
+        }
+    }
+}
+
 /// Read a `.xyz` file.
 #[pyfunction]
 fn read_xyz(py: Python, path: PathBuf) -> PyResult<Vec<XyzData>> {
@@ -276,5 +288,6 @@ fn flour(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(write_cube, m)?)?;
     m.add_function(wrap_pyfunction!(write_xyz, m)?)?;
     m.add_function(wrap_pyfunction!(read_xyz, m)?)?;
+    m.add_class::<XyzData>()?;
     Ok(())
 }
