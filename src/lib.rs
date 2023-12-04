@@ -274,9 +274,8 @@ fn write_xyz(path: PathBuf, xyz_structures: Vec<PyRef<XyzData>>) -> PyResult<()>
                 element, position[0], position[1], position[2],
             ))
         });
-
-        fs::write(&path, &content)?;
     }
+    fs::write(path, content)?;
     Ok(())
 }
 
