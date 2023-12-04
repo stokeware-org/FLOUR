@@ -4,7 +4,7 @@ use itertools::izip;
 use numpy::convert::IntoPyArray;
 use numpy::ndarray::Axis;
 use numpy::{PyArray1, PyArray2, PyArray3, PyReadonlyArray1, PyReadonlyArray2, PyReadonlyArray3};
-use pyo3::{exceptions::PyRuntimeError, prelude::*};
+use pyo3::{exceptions::PyRuntimeError, prelude::*, Python};
 
 #[pyclass]
 struct VoxelGrid {
@@ -257,27 +257,26 @@ fn read_xyz(py: Python, path: PathBuf) -> PyResult<Vec<XyzData>> {
 }
 
 #[pyfunction]
-fn write_xyz(
-    path: PathBuf,
-    comment: &str,
-    elements: Vec<String>,
-    positions: PyReadonlyArray2<f64>,
-) -> PyResult<()> {
-    let positions = positions.as_array();
+fn write_xyz(path: PathBuf, xyz_structures: Vec<PyRef<XyzData>>) -> PyResult<()> {
+    let mut content = String::new();
 
-    let mut content: String = elements.len().to_string();
-    content.push('\n');
-    content.push_str(comment);
-    content.push('\n');
+    for xyz_data in xyz_structures {
+        let positions = Python::with_gil(|py| xyz_data.positions.as_ref(py).to_owned_array());
 
-    izip!(elements, positions.axis_iter(Axis(0))).for_each(|(element, position)| {
-        content.push_str(&format!(
-            "{} {: >11.6} {: >11.6} {: >11.6} \n",
-            element, position[0], position[1], position[2],
-        ))
-    });
+        content.push_str(&xyz_data.elements.len().to_string());
+        content.push('\n');
+        content.push_str(&xyz_data.comment);
+        content.push('\n');
 
-    fs::write(path, content)?;
+        izip!(&xyz_data.elements, positions.axis_iter(Axis(0))).for_each(|(element, position)| {
+            content.push_str(&format!(
+                "{} {: >11.6} {: >11.6} {: >11.6} \n",
+                element, position[0], position[1], position[2],
+            ))
+        });
+
+        fs::write(&path, &content)?;
+    }
     Ok(())
 }
 

@@ -19,30 +19,28 @@ def test_xyz(
             [10.0, 11.0, 12.0],
         ]
     )
-    flour.write_xyz(
-        path=xyz_path,
-        comment=comment,
-        elements=elements,
-        positions=positions,
-    )
-    
-    xyz_data = flour.read_xyz(xyz_path)
-    assert comment == xyz_data[0].comment
-    assert np.all(np.equal(elements, xyz_data[0].elements))
-    assert np.all(np.isclose(positions, xyz_data[0].positions))
-    
-    # test reading an XYZ file with multiple structures
-    multi_xyz_path = pathlib.Path('C:/Users/Joshua/OneDrive/Desktop/iqmol_scratch/conformers_4_dft.xyz')
-    multi_xyz_data = flour.read_xyz(multi_xyz_path)
-    assert (len(multi_xyz_data)) == 28
-    assert multi_xyz_data[0].comment == '-33286.03927246263'
-    for i, current_xyz_data in enumerate(multi_xyz_data):
-        assert len(current_xyz_data.elements) == 61
-    assert multi_xyz_data[27].elements[60] == 'H'
-    assert np.isclose(multi_xyz_data[27].positions[60,2], -3.171669)
-    
-    xyz_constructor_data = flour.XyzData(
+    xyz_data_0 = flour.XyzData(
         comment=comment,
         elements=elements,
         positions=positions
     )
+    xyz_data_1 = flour.XyzData(
+        comment=comment+'!',
+        elements=elements[::-1],
+        positions=positions*-1
+    )
+    
+    flour.write_xyz(
+        path=xyz_path,
+        xyz_structures=[xyz_data_0, xyz_data_1],
+    )
+    
+    xyz_structures = flour.read_xyz(xyz_path)
+    assert comment == xyz_structures[0].comment
+    assert np.all(np.equal(elements, xyz_structures[0].elements))
+    assert np.all(np.isclose(positions, xyz_structures[0].positions))
+    
+    assert xyz_data_1.comment == xyz_structures[1].comment
+    assert np.all(np.equal(xyz_data_1.elements, xyz_structures[1].elements))
+    assert np.all(np.isclose(xyz_data_1.positions, xyz_structures[1].positions))
+    
