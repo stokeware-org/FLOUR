@@ -220,15 +220,10 @@ fn read_xyz(py: Python, path: PathBuf) -> PyResult<Vec<XyzData>> {
     let mut multi_xyz_data: Vec<XyzData> = vec![];
     let contents = fs::read_to_string(path)?;
     let mut lines = contents.lines();
-    loop {
-        let Some(first_line) = lines.next() else {break};
+    while let (Some(first_line), Some(second_line)) = (lines.next(), lines.next()) {
         let mut first_line_words = first_line.split_ascii_whitespace();
         let Some(num_atoms) = first_line_words.next() else {break};
         let num_atoms = num_atoms.parse::<usize>()?;
-
-        let second_line = lines
-            .next()
-            .ok_or_else(|| PyRuntimeError::new_err("xyz file is missing lines"))?;
 
         let mut elements = Vec::with_capacity(num_atoms);
         let mut positions = Vec::with_capacity(num_atoms * 3);
