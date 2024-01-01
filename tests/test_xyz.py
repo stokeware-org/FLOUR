@@ -43,4 +43,3 @@ def test_xyz(
     assert xyz_data_1.comment == xyz_structures[1].comment
     assert np.all(np.equal(xyz_data_1.elements, xyz_structures[1].elements))
     assert np.all(np.isclose(xyz_data_1.positions, xyz_structures[1].positions))
-    
