@@ -4,7 +4,7 @@ use itertools::izip;
 use numpy::convert::IntoPyArray;
 use numpy::ndarray::Axis;
 use numpy::{PyArray1, PyArray2, PyArray3, PyReadonlyArray1, PyReadonlyArray2, PyReadonlyArray3};
-use pyo3::{exceptions::PyRuntimeError, prelude::*};
+use pyo3::{exceptions::PyRuntimeError, prelude::*, Python};
 
 #[pyclass]
 struct VoxelGrid {
@@ -192,10 +192,95 @@ fn write_cube(
     Ok(())
 }
 
+#[pyclass]
+struct XyzData {
+    #[pyo3(get)]
+    elements: Vec<String>,
+    #[pyo3(get)]
+    comment: String,
+    #[pyo3(get)]
+    positions: Py<PyArray2<f64>>,
+}
+
+#[pymethods]
+impl XyzData {
+    #[new]
+    fn new(comment: String, elements: Vec<String>, positions: Py<PyArray2<f64>>) -> Self {
+        XyzData {
+            elements,
+            comment,
+            positions,
+        }
+    }
+}
+
+/// Read a `.xyz` file.
+#[pyfunction]
+fn read_xyz(py: Python, path: PathBuf) -> PyResult<Vec<XyzData>> {
+    let mut multi_xyz_data: Vec<XyzData> = vec![];
+    let contents = fs::read_to_string(path)?;
+    let mut lines = contents.lines();
+    while let (Some(first_line), Some(second_line)) = (lines.next(), lines.next()) {
+        let mut first_line_words = first_line.split_ascii_whitespace();
+        let Some(num_atoms) = first_line_words.next() else {break};
+        let num_atoms = num_atoms.parse::<usize>()?;
+
+        let mut elements = Vec::with_capacity(num_atoms);
+        let mut positions = Vec::with_capacity(num_atoms * 3);
+        for _ in 0..num_atoms {
+            let atom_line = lines.next().ok_or_else(|| {
+                PyRuntimeError::new_err("xyz file is missing atom definition line")
+            })?;
+            let mut words = atom_line.split_ascii_whitespace();
+            let element = words
+                .next()
+                .ok_or_else(|| PyRuntimeError::new_err("xyz file is missing element symbol"))?;
+            elements.push(element.to_string());
+            positions.extend(words.map(|word: &str| word.parse::<f64>().unwrap()));
+        }
+
+        multi_xyz_data.push(XyzData {
+            elements,
+            comment: second_line.to_string(),
+            positions: positions
+                .into_pyarray(py)
+                .reshape([num_atoms, 3])?
+                .to_owned(),
+        });
+    }
+    Ok(multi_xyz_data)
+}
+
+#[pyfunction]
+fn write_xyz(path: PathBuf, xyz_structures: Vec<PyRef<XyzData>>) -> PyResult<()> {
+    let mut content = String::new();
+
+    for xyz_data in xyz_structures {
+        let positions = Python::with_gil(|py| xyz_data.positions.as_ref(py).to_owned_array());
+
+        content.push_str(&xyz_data.elements.len().to_string());
+        content.push('\n');
+        content.push_str(&xyz_data.comment);
+        content.push('\n');
+
+        izip!(&xyz_data.elements, positions.axis_iter(Axis(0))).for_each(|(element, position)| {
+            content.push_str(&format!(
+                "{} {: >11.6} {: >11.6} {: >11.6} \n",
+                element, position[0], position[1], position[2],
+            ))
+        });
+    }
+    fs::write(path, content)?;
+    Ok(())
+}
+
 /// A Python module implemented in Rust.
 #[pymodule]
 fn flour(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(read_cube, m)?)?;
     m.add_function(wrap_pyfunction!(write_cube, m)?)?;
+    m.add_function(wrap_pyfunction!(write_xyz, m)?)?;
+    m.add_function(wrap_pyfunction!(read_xyz, m)?)?;
+    m.add_class::<XyzData>()?;
     Ok(())
 }

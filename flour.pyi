@@ -29,3 +29,15 @@ def write_cube(
     voxels: npt.NDArray[np.float64],
 ) -> None:
     pass
+
+
+class XyzData:
+    elements: list[str]
+    comment: str
+    positions: npt.NDArray[np.float64]
+
+def read_xyz(path: pathlib.Path | str) -> list[XyzData]:
+    pass
+
+def write_xyz(path: pathlib.Path | str, xyz_structures: list[XyzData]) -> None:
+    pass
